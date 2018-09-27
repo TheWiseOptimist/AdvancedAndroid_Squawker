@@ -5,6 +5,7 @@ buildscript {
         jcenter()
     }
     dependencies {
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.2'
         classpath 'com.android.tools.build:gradle:3.2.0'
 
         // TODO completed (1) Make a new Firebase project in the Firebase Console and follow the instructions.
