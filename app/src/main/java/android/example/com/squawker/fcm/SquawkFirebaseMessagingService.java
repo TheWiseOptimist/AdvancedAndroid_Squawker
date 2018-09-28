@@ -55,10 +55,12 @@ public class SquawkFirebaseMessagingService extends FirebaseMessagingService {
 
     // 3.1
     private void displayNotification(Map<String, String> data) {
-        String shortenedMessage =
-                data.get(SquawkContract.COLUMN_MESSAGE).substring(0, 30);
+        String shortenedMessage = data.get(SquawkContract.COLUMN_MESSAGE);
+        shortenedMessage =
+                shortenedMessage.substring(0, Math.min(shortenedMessage.length(), 30));
 
         Notification notification = new NotificationCompat.Builder(this, "Squawker")
+//        Notification notification = new NotificationCompat.Builder(this, null)
                 .setContentTitle(data.get(SquawkContract.COLUMN_AUTHOR))
                 .setContentText(shortenedMessage)
                 .setSmallIcon(R.mipmap.ic_launcher)
