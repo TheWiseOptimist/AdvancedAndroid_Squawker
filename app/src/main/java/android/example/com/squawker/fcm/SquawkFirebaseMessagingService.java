@@ -1,5 +1,9 @@
 package android.example.com.squawker.fcm;
 
+import android.content.ContentValues;
+import android.example.com.squawker.provider.SquawkContract;
+import android.example.com.squawker.provider.SquawkProvider;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -24,23 +28,46 @@ public class SquawkFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        if (remoteMessage.getData().size() > 0) {
-            Map<String, String> data = remoteMessage.getData();
-            String author=data.get("author");
-            String authorKey=data.get("authorKey");
-            String message=data.get("message");
-            String date=data.get("date");
-        }
+        Map<String, String> data = remoteMessage.getData();
 
+        // TODO (3) As part of the new Service - If there is message data, get the data using
+        // the keys and do two things with it :
+        if (data.size() > 0) {
+            // 1. Display a notification with the first 30 character of the message
+            displayNotification(data);
+            // 2. Use the content provider to insert a new message into the local database
+            insertSquawk(data);
+            // Hint: You shouldn't be doing content provider operations on the main thread.
+            // If you don't know how to make notifications or interact with a content provider
+            // look at the notes in the classroom for help.
+
+            String author = data.get("author");
+            String authorKey = data.get("authorKey");
+            String message = data.get("message");
+            String date = data.get("date");
+        }
     }
 
-    // TODO (3) As part of the new Service - If there is message data, get the data using
-    // the keys and do two things with it :
-    // 1. Display a notification with the first 30 character of the message
-    // 2. Use the content provider to insert a new message into the local database
-    // Hint: You shouldn't be doing content provider operations on the main thread.
-    // If you don't know how to make notifications or interact with a content provider
-    // look at the notes in the classroom for help.
+
+    private void displayNotification(Map<String, String> data) {
+    }
+
+    private void insertSquawk(final Map<String, String> data) {
+        AsyncTask<Void, Void, Void> insertSquawkTask = new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                ContentValues newSquawk = new ContentValues();
+                newSquawk.put(SquawkContract.COLUMN_AUTHOR, data.get(SquawkContract.COLUMN_AUTHOR));
+                newSquawk.put(SquawkContract.COLUMN_AUTHOR_KEY, data.get(SquawkContract.COLUMN_AUTHOR_KEY));
+                newSquawk.put(SquawkContract.COLUMN_MESSAGE, data.get(SquawkContract.COLUMN_MESSAGE));
+                newSquawk.put(SquawkContract.COLUMN_DATE, data.get(SquawkContract.COLUMN_DATE));
+                getContentResolver().insert(SquawkProvider.SquawkMessages.CONTENT_URI, newSquawk);
+
+                return null;
+            }
+        };
+        insertSquawkTask.execute();
+    }
 
 
     @Override
