@@ -98,14 +98,14 @@ public class SquawkFirebaseMessageService extends FirebaseMessagingService {
 
         Notification notification = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            int importance = NotificationManager.IMPORTANCE_LOW;
+//            int importance = NotificationManager.IMPORTANCE_LOW;
+            int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel nc = new NotificationChannel(channelId, channelName, importance);
             nc.setDescription(channelId);
             nc.enableLights(true);
             nc.setLightColor(Color.YELLOW);
             nc.setVibrationPattern(new long[]{100, 200, 300, 400, 500});
             nc.enableVibration(true);
-
 
             notification = new Notification.Builder(this, channelId)
                     .setContentTitle(data.get(SquawkContract.COLUMN_AUTHOR))
