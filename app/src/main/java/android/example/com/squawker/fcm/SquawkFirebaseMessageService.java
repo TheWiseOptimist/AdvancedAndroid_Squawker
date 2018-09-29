@@ -1,10 +1,14 @@
 package android.example.com.squawker.fcm;
 
 import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.ContentValues;
+import android.content.Intent;
+import android.example.com.squawker.MainActivity;
 import android.example.com.squawker.R;
 import android.example.com.squawker.provider.SquawkContract;
 import android.example.com.squawker.provider.SquawkProvider;
+import android.media.RingtoneManager;
 import android.os.AsyncTask;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -14,11 +18,10 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.Map;
-import java.util.Scanner;
 
 // TODO completed (1) Make a new Service in the fcm package that extends from FirebaseMessagingService.
 
-public class SquawkFirebaseMessagingService extends FirebaseMessagingService {
+public class SquawkFirebaseMessageService extends FirebaseMessagingService {
 
     // TODO completed (2) As part of the new Service - Override onMessageReceived. This method will
     // be triggered whenever a squawk is received. You can get the data from the squawk
@@ -53,24 +56,6 @@ public class SquawkFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
-    // 3.1
-    private void displayNotification(Map<String, String> data) {
-        String shortenedMessage = data.get(SquawkContract.COLUMN_MESSAGE);
-        shortenedMessage =
-                shortenedMessage.substring(0, Math.min(shortenedMessage.length(), 30));
-
-        Notification notification = new NotificationCompat.Builder(this, "Squawker")
-//        Notification notification = new NotificationCompat.Builder(this, null)
-                .setContentTitle(data.get(SquawkContract.COLUMN_AUTHOR))
-                .setContentText(shortenedMessage)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .build();
-        NotificationManagerCompat managerCompat =
-                NotificationManagerCompat.from(getApplicationContext());
-        managerCompat.notify(123, notification);
-
-    }
-
     // 3.2
     private void insertSquawk(final Map<String, String> data) {
         AsyncTask<Void, Void, Void> insertSquawkTask = new AsyncTask<Void, Void, Void>() {
@@ -89,6 +74,30 @@ public class SquawkFirebaseMessagingService extends FirebaseMessagingService {
         insertSquawkTask.execute();
     }
 
+    // 3.1
+    private void displayNotification(Map<String, String> data) {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        PendingIntent pendingIntent =
+                PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+
+        String shortenedMessage = data.get(SquawkContract.COLUMN_MESSAGE);
+        shortenedMessage =
+                shortenedMessage.substring(0, Math.min(shortenedMessage.length(), 30));
+
+        Notification notification = new NotificationCompat.Builder(this, "Squawker")
+                .setContentTitle(data.get(SquawkContract.COLUMN_AUTHOR))
+                .setContentText(shortenedMessage)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                .setContentIntent(pendingIntent)
+                .build();
+        NotificationManagerCompat managerCompat =
+                NotificationManagerCompat.from(getApplicationContext());
+        managerCompat.notify(123, notification);
+
+    }
 
     @Override
     public void onNewToken(String s) {

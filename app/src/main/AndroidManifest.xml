@@ -43,7 +43,7 @@
         <!-- TODO completed (4) Add your new service here, with an intent filter for action
         com.google.firebase.MESSAGING_EVENT -->
         <service
-            android:name=".fcm.SquawkFirebaseMessagingService"
+            android:name=".fcm.SquawkFirebaseMessageService"
             android:stopWithTask="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
