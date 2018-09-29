@@ -1,6 +1,8 @@
 package android.example.com.squawker.fcm;
 
+
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -86,17 +88,34 @@ public class SquawkFirebaseMessageService extends FirebaseMessagingService {
         shortenedMessage =
                 shortenedMessage.substring(0, Math.min(shortenedMessage.length(), 30));
 
-        Notification notification = new NotificationCompat.Builder(this, "Squawker")
-                .setContentTitle(data.get(SquawkContract.COLUMN_AUTHOR))
-                .setContentText(shortenedMessage)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-                .setContentIntent(pendingIntent)
-                .build();
-        NotificationManagerCompat managerCompat =
-                NotificationManagerCompat.from(getApplicationContext());
-        managerCompat.notify(123, notification);
 
+        Notification notification = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            notification = new Notification.Builder(this, "Squawker")
+                    .setContentTitle(data.get(SquawkContract.COLUMN_AUTHOR))
+                    .setContentText(shortenedMessage)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                    .setContentIntent(pendingIntent)
+                    .build();
+
+            NotificationManagerCompat manager =
+                    NotificationManagerCompat.from(getApplicationContext());
+            manager.notify(123, notification);
+            Log.e("NOTIFICATION", "API 26+ (" + android.os.Build.VERSION.SDK_INT + ")");
+        } else {
+            notification = new NotificationCompat.Builder(this, "Squawker")
+                    .setContentTitle(data.get(SquawkContract.COLUMN_AUTHOR))
+                    .setContentText(shortenedMessage)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                    .setContentIntent(pendingIntent)
+                    .build();
+            NotificationManagerCompat managerCompat =
+                    NotificationManagerCompat.from(getApplicationContext());
+            managerCompat.notify(123, notification);
+            Log.e("NOTIFICATION", "API 25- (" + android.os.Build.VERSION.SDK_INT + ")");
+        }
     }
 
     @Override
