@@ -2,14 +2,17 @@ package android.example.com.squawker.fcm;
 
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.example.com.squawker.MainActivity;
 import android.example.com.squawker.R;
 import android.example.com.squawker.provider.SquawkContract;
 import android.example.com.squawker.provider.SquawkProvider;
+import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.os.AsyncTask;
 import android.support.v4.app.NotificationCompat;
@@ -88,33 +91,48 @@ public class SquawkFirebaseMessageService extends FirebaseMessagingService {
         shortenedMessage =
                 shortenedMessage.substring(0, Math.min(shortenedMessage.length(), 30));
 
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        String channelId = "Squawker";
+        CharSequence channelName = channelId;
 
         Notification notification = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            notification = new Notification.Builder(this, "Squawker")
-                    .setContentTitle(data.get(SquawkContract.COLUMN_AUTHOR))
-                    .setContentText(shortenedMessage)
-                    .setSmallIcon(R.mipmap.ic_launcher)
-                    .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-                    .setContentIntent(pendingIntent)
-                    .build();
+            int importance = NotificationManager.IMPORTANCE_LOW;
+            NotificationChannel nc = new NotificationChannel(channelId, channelName, importance);
+            nc.setDescription(channelId);
+            nc.enableLights(true);
+            nc.setLightColor(Color.YELLOW);
+            nc.setVibrationPattern(new long[]{100, 200, 300, 400, 500});
+            nc.enableVibration(true);
 
-            NotificationManagerCompat manager =
-                    NotificationManagerCompat.from(getApplicationContext());
-            manager.notify(123, notification);
-            Log.e("NOTIFICATION", "API 26+ (" + android.os.Build.VERSION.SDK_INT + ")");
+
+            notification = new Notification.Builder(this, channelId)
+                    .setContentTitle(data.get(SquawkContract.COLUMN_AUTHOR))
+                    .setContentText(shortenedMessage)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setAutoCancel(true)
+//                    .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                    .setContentIntent(pendingIntent)
+                    .build();
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(nc);
+                notificationManager.notify(123, notification);
+                Log.e("NOTIFICATION", "API 26+ (" + android.os.Build.VERSION.SDK_INT + ")");
+            }
         } else {
-            notification = new NotificationCompat.Builder(this, "Squawker")
+            notification = new NotificationCompat.Builder(this, channelId)
                     .setContentTitle(data.get(SquawkContract.COLUMN_AUTHOR))
                     .setContentText(shortenedMessage)
                     .setSmallIcon(R.mipmap.ic_launcher)
                     .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                     .setContentIntent(pendingIntent)
+                    .setAutoCancel(true)
                     .build();
-            NotificationManagerCompat managerCompat =
-                    NotificationManagerCompat.from(getApplicationContext());
-            managerCompat.notify(123, notification);
-            Log.e("NOTIFICATION", "API 25- (" + android.os.Build.VERSION.SDK_INT + ")");
+            if (notificationManager != null) {
+                notificationManager.notify(123, notification);
+                Log.e("NOTIFICATION", "API 25- (" + android.os.Build.VERSION.SDK_INT + ")");
+            }
         }
     }
 
