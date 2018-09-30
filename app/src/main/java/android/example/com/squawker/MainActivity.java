@@ -22,6 +22,7 @@ import android.example.com.squawker.following.FollowingPreferenceActivity;
 import android.example.com.squawker.provider.SquawkContract;
 import android.example.com.squawker.provider.SquawkProvider;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
@@ -35,7 +36,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
 public class MainActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
@@ -89,10 +92,17 @@ public class MainActivity extends AppCompatActivity implements
         getSupportLoaderManager().initLoader(LOADER_ID_MESSAGES, null, this);
 
         // Get token from the ID Service you created and show it in a log
-        String token = FirebaseInstanceId.getInstance().getToken();
-        String msg = getString(R.string.message_token_format, token);
-        Log.d(LOG_TAG, msg);
-
+//        String token = FirebaseInstanceId.getInstance().getToken();
+//        String msg = getString(R.string.message_token_format, token);
+//        Log.d(LOG_TAG, msg);
+        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(
+                this, new OnSuccessListener<InstanceIdResult>() {
+                    @Override
+                    public void onSuccess(InstanceIdResult instanceIdResult) {
+                        String newToken = instanceIdResult.getToken();
+                        Log.e("newToken", newToken);
+                    }
+                });
     }
 
     @Override
@@ -119,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements
      * Loader callbacks
      */
 
+    @NonNull
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         // This method generates a selection off of only the current followers
@@ -130,12 +141,12 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
         mAdapter.swapCursor(data);
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         mAdapter.swapCursor(null);
     }
 }

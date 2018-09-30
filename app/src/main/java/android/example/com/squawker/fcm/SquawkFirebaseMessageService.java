@@ -136,9 +136,10 @@ public class SquawkFirebaseMessageService extends FirebaseMessagingService {
         if (message.length() > NOTIFICATION_MAX_CHARACTERS) {
             message = message.substring(0, NOTIFICATION_MAX_CHARACTERS) + "\u2026";
         }
-
+        String channelId = "Squawker";
+        CharSequence channelName = channelId;
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this,channelId)
                 .setSmallIcon(R.drawable.ic_duck)
                 .setContentTitle(String.format(getString(R.string.notification_message), author))
                 .setContentText(message)
@@ -149,6 +150,14 @@ public class SquawkFirebaseMessageService extends FirebaseMessagingService {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
+
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
     }
+
+    @Override
+    public void onNewToken(String s) {
+        super.onNewToken(s);
+        Log.e("NEW_TOKEN", s);
+    }
+
 }
